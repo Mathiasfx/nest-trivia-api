@@ -12,41 +12,12 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Middleware CORS explícito - ANTES de todo
-  app.use((req, res, next) => {
-    const origin = req.get('origin')?.toLowerCase();
-    const allowedOrigins = [
-      'http://localhost:4200',
-      'http://localhost:3007',
-      'https://triviamultiplayerdashboard.netlify.app',
-      'https://triviamultiplayer.netlify.app'
-    ];
-    
-    if (allowedOrigins.includes(origin)) {
-      res.header('Access-Control-Allow-Origin', origin);
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-    }
-    
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    
-    next();
-  });
-
-  // También enableCors como respaldo
+  // TEST: Permitir CORS de forma ultra permisiva
   app.enableCors({
-    origin: [
-      'http://localhost:4200',
-      'http://localhost:3007',
-      'https://triviamultiplayerdashboard.netlify.app',
-      'https://triviamultiplayer.netlify.app'
-    ],
+    origin: true, // Permite ANY origin - solo para testing
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: '*',
   });
 
   // Configurar serving de archivos estáticos desde la carpeta public
