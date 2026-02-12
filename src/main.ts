@@ -13,26 +13,20 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Configura CORS para permitir peticiones desde tu frontend
-  app.enableCors({
-    origin: (origin, callback) => {
-      const whitelist = [
-        'http://localhost:4200',
-        'http://localhost:3007',
-        'https://triviamultiplayerdashboard.netlify.app',
-        'https://triviamultiplayer.netlify.app'
-      ];
-      
-      if (!origin || whitelist.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+  const corsOptions = {
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:3007',
+      'https://triviamultiplayerdashboard.netlify.app',
+      'https://triviamultiplayer.netlify.app'
+    ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    preflightContinue: false,
-  });
+    exposedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400,
+  };
+  app.enableCors(corsOptions);
 
   // Configurar serving de archivos estáticos desde la carpeta public
   const publicPath = join(__dirname, '..', 'public');
