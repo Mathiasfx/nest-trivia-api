@@ -14,15 +14,24 @@ async function bootstrap() {
 
   // Configura CORS para permitir peticiones desde tu frontend
   app.enableCors({
-    origin: [
-      'http://localhost:4200',
-      'http://localhost:3007',
-      'https://triviamultiplayerdashboard.netlify.app',
-      'https://triviamultiplayer.netlify.app'
-    ],
+    origin: (origin, callback) => {
+      const whitelist = [
+        'http://localhost:4200',
+        'http://localhost:3007',
+        'https://triviamultiplayerdashboard.netlify.app',
+        'https://triviamultiplayer.netlify.app'
+      ];
+      
+      if (!origin || whitelist.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    preflightContinue: false,
   });
 
   // Configurar serving de archivos estáticos desde la carpeta public
