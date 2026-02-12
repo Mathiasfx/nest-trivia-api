@@ -24,9 +24,33 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200,
     maxAge: 86400,
   };
   app.enableCors(corsOptions);
+
+  // Agregar middleware explícito CORS como fallback
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      'http://localhost:4200',
+      'http://localhost:3007',
+      'https://triviamultiplayerdashboard.netlify.app',
+      'https://triviamultiplayer.netlify.app'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    }
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
 
   // Configurar serving de archivos estáticos desde la carpeta public
   const publicPath = join(__dirname, '..', 'public');
