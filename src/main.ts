@@ -14,7 +14,7 @@ async function bootstrap() {
 
   // Configura CORS para permitir peticiones desde tu frontend
   app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:3007'], // Permitir también el mismo puerto
+    origin: ['http://localhost:4200', 'http://localhost:3007', 'https://triviamultiplayerdashboard.netlify.app','https://triviamultiplayer.netlify.app/'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
