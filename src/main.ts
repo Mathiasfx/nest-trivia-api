@@ -2,12 +2,58 @@
  * This is not a production server yet!
  * This is only a minimal backend to get started.
  */
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, HttpExceptionFilter } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { 
+  ExceptionFilter, 
+  Catch, 
+  ArgumentsHost, 
+  HttpException, 
+  InternalServerErrorException 
+} from '@nestjs/common';
+
+@Catch()
+class GlobalExceptionFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    const request = ctx.getRequest();
+    
+    console.error('❌ FULL ERROR DETAILS:');
+    console.error('Exception Type:', exception?.constructor?.name);
+    console.error('Exception:', exception);
+    if (exception instanceof Error) {
+      console.error('Stack:', exception.stack);
+    }
+    
+    let status = 500;
+    let message = 'Internal server error';
+    let errorDetail = '';
+    
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      const resp = exception.getResponse();
+      message = typeof resp === 'string' ? resp : (resp as any).message || 'Error';
+      errorDetail = JSON.stringify(resp);
+    } else if (exception instanceof Error) {
+      message = exception.message;
+      errorDetail = exception.stack || '';
+    }
+    
+    response.status(status).json({
+      statusCode: status,
+      message: message,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      method: request.method,
+      detail: errorDetail,
+    });
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -34,6 +80,7 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new GlobalExceptionFilter());
   const port = process.env.PORT || 3007;
   await app.listen(port);
   Logger.log(
