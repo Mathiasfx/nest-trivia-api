@@ -12,26 +12,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Configura CORS para permitir peticiones desde tu frontend
-  const corsOptions = {
-    origin: [
-      'http://localhost:4200',
-      'http://localhost:3007',
-      'https://triviamultiplayerdashboard.netlify.app',
-      'https://triviamultiplayer.netlify.app'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200,
-    maxAge: 86400,
-  };
-  app.enableCors(corsOptions);
-
-  // Agregar middleware explícito CORS como fallback
+  // Middleware CORS explícito - ANTES de todo
   app.use((req, res, next) => {
-    const origin = req.headers.origin;
+    const origin = req.get('origin')?.toLowerCase();
     const allowedOrigins = [
       'http://localhost:4200',
       'http://localhost:3007',
@@ -40,16 +23,30 @@ async function bootstrap() {
     ];
     
     if (allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
     }
     
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
+    
     next();
+  });
+
+  // También enableCors como respaldo
+  app.enableCors({
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:3007',
+      'https://triviamultiplayerdashboard.netlify.app',
+      'https://triviamultiplayer.netlify.app'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Configurar serving de archivos estáticos desde la carpeta public
