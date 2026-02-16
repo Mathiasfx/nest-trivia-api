@@ -57,9 +57,10 @@ class GlobalExceptionFilter implements ExceptionFilter {
 
 async function bootstrap() {
   try {
+    console.log('🔥🔥🔥 BOOTSTRAP STARTING - VERSION 2.0.5 🔥🔥🔥');
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    console.log('✅ CORS INITIALIZED - Version 2.0.4 (PERMISSIVE)');
+    console.log('✅ CORS INITIALIZED - Version 2.0.5 (PERMISSIVE)');
 
     // Configurar CORS de forma ultra permisiva para debugging
     app.enableCors({
