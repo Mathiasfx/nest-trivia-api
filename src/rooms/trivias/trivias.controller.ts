@@ -8,7 +8,7 @@ export class TriviasController {
   constructor(private readonly triviasService: TriviasService) {}
 
   @Post()
-  createTrivia(@Req() req, @Body() dto: any) {
+  createTrivia(@Req() req: any, @Body() dto: any) {
     return this.triviasService.createTrivia(req.user.userId, dto);
   }
 
@@ -16,27 +16,27 @@ export class TriviasController {
   @Header('Cache-Control', 'no-cache, no-store, must-revalidate')
   @Header('Pragma', 'no-cache')
   @Header('Expires', '0')
-  getMyTrivia(@Req() req) {
+  getMyTrivia(@Req() req: any) {
     return this.triviasService.getTriviaByUser(req.user.userId);
   }
 
   @Get(':id')
-  getTriviaById(@Param('id') id: string, @Req() req) {
+  getTriviaById(@Param('id') id: string, @Req() req: any) {
     return this.triviasService.getTriviaById(id, req.user.userId);
   }
 
   @Put(':id')
-  updateTrivia(@Param('id') id: string, @Body() dto: any, @Req() req) {
+  updateTrivia(@Param('id') id: string, @Body() dto: any, @Req() req: any) {
     return this.triviasService.updateTrivia(id, req.user.userId, dto);
   }
 
   @Delete(':id')
-  deleteTrivia(@Param('id') id: string, @Req() req) {
+  deleteTrivia(@Param('id') id: string, @Req() req: any) {
     return this.triviasService.deleteTrivia(id, req.user.userId);
   }
 
   @Post(':id/start')
-  startTrivia(@Param('id') id: string, @Req() req) {
+  startTrivia(@Param('id') id: string, @Req() req: any) {
     return this.triviasService.startTrivia(id, req.user.userId);
   }
 

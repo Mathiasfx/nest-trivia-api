@@ -1,12 +1,12 @@
 export class QuestionDto {
-  question: string;
-  options: string[];
-  answer: string;
+  question!: string;
+  options!: string[];
+  answer!: string;
 }
 
 export class CreateTriviaDto {
-  title: string;
-  questions: QuestionDto[];
+  title!: string;
+  questions!: QuestionDto[];
 }
 
 export class UpdateTriviaDto {

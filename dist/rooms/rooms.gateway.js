@@ -392,10 +392,10 @@ exports.RoomsGateway = RoomsGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         namespace: '/rooms',
         cors: {
-            origin: true,
-            credentials: true,
+            origin: '*',
+            credentials: false,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization'],
+            allowedHeaders: '*',
         }
     }),
     __metadata("design:paramtypes", [rooms_service_1.RoomsService,

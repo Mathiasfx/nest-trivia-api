@@ -22,7 +22,7 @@ import { TriviasService } from './trivias/trivias.service';
 })
 export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   constructor(
     private roomsService: RoomsService,
@@ -116,10 +116,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.join(data.roomId);
     
     // Guardar referencia del playerId en el socket para poder eliminarlo después
-    client.data.playerId = player.id;
+    client.data.playerId = player!.id;
     client.data.roomId = data.roomId;
     
-    console.log(`Player created with ID: ${player.id}, Socket ID: ${client.id}, Admin: ${player.isAdmin}`);
+    console.log(`Player created with ID: ${player!.id}, Socket ID: ${client.id}, Admin: ${player!.isAdmin}`);
     
     // Enviar información actualizada del room al cliente que se unió
     const room = this.roomsService.getRoom(data.roomId);
@@ -131,7 +131,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Enviar estado actualizado a todos en el room para que todos vean el contador de jugadores
     this.server.to(data.roomId).emit('roomState', room);
     
-    return { success: true, playerId: player.id };
+    return { success: true, playerId: player!.id };
   }
 
   @SubscribeMessage('startGame')
@@ -196,7 +196,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       setTimeout(() => {
         const ranking = this.roomsService.getRanking(roomId);
         console.log(`🏆 Game finished in room ${roomId}! Final ranking:`, ranking);
-        console.log(`📊 Total players: ${room.players.length}, Total rounds: ${room.round}`);
+        console.log(`📊 Total players: ${room!.players.length}, Total rounds: ${room!.round}`);
         
         this.server.to(roomId).emit('gameEnded', { 
           message: '¡Juego terminado!',
@@ -205,7 +205,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
         
         // Actualizar estado del room
-        room.isActive = false;
+        room!.isActive = false;
         this.server.to(roomId).emit('roomState', room);
         
         console.log(`✅ Room ${roomId} game state updated to inactive`);

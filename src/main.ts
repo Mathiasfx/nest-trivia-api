@@ -80,8 +80,7 @@ async function bootstrap() {
     app.useStaticAssets(publicPath);
 
     // Agregar middleware para debug
-    app.use((req, res, next) => {
-      console.log(`${req.method} ${req.url}`);
+  app.use((req: any, res: any, next: any) => {
       next();
     });
 

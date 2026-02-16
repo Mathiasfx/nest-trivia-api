@@ -15,6 +15,9 @@ const auth_controller_1 = require("./auth.controller");
 const prisma_service_1 = require("../prisma.service");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 let AuthModule = class AuthModule {
+    onModuleInit() {
+        console.log('✅ AuthModule initialized successfully');
+    }
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
