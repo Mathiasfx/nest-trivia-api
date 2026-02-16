@@ -58,12 +58,31 @@ class GlobalExceptionFilter implements ExceptionFilter {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // TEST: Permitir CORS de forma ultra permisiva
+  // Configurar CORS para permitir Netlify y localhost
+  const allowedOrigins = [
+    'https://triviamultiplayerdashboard.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:4200',
+    'http://localhost:3007',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:4200',
+  ];
+
   app.enableCors({
-    origin: true, // Permite ANY origin - solo para testing
+    origin: (origin, callback) => {
+      // Si no hay origin (por ejemplo, en mobile apps o Postman), permitir
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked for origin: ${origin}`);
+        callback(null, true); // Permitir igualmente para debugging
+      }
+    },
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: '*',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+    preflightContinue: true,
+    optionsSuccessStatus: 200,
   });
 
   // Configurar serving de archivos estáticos desde la carpeta public

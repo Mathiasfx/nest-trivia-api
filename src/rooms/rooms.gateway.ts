@@ -14,7 +14,13 @@ import { TriviasService } from './trivias/trivias.service';
 @WebSocketGateway({ 
   namespace: '/rooms',
   cors: {
-    origin: true,
+    origin: [
+      'https://triviamultiplayerdashboard.netlify.app',
+      'http://localhost:3000',
+      'http://localhost:4200',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:4200',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
