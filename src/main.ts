@@ -56,44 +56,51 @@ class GlobalExceptionFilter implements ExceptionFilter {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  try {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  console.log('✅ CORS INITIALIZED - Version 2.0.1');
+    console.log('✅ CORS INITIALIZED - Version 2.0.1');
 
-  // Configurar CORS de forma permisiva para debugging
-  app.enableCors({
-    origin: '*',
-    credentials: false,
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: '*',
-  });
+    // Configurar CORS de forma permisiva para debugging
+    app.enableCors({
+      origin: '*',
+      credentials: false,
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: '*',
+    });
 
-  // Configurar serving de archivos estáticos desde la carpeta public
-  const publicPath = join(__dirname, '..', 'public');
-  console.log('Public path:', publicPath);
-  app.useStaticAssets(publicPath);
+    // Configurar serving de archivos estáticos desde la carpeta public
+    const publicPath = join(__dirname, '..', 'public');
+    console.log('Public path:', publicPath);
+    app.useStaticAssets(publicPath);
 
-  // Agregar middleware para debug
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-  });
+    // Agregar middleware para debug
+    app.use((req, res, next) => {
+      console.log(`${req.method} ${req.url}`);
+      next();
+    });
 
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
-  app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new GlobalExceptionFilter());
-  const port = process.env.PORT || 3007;
-  await app.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
-  );
-  Logger.log(
-    `📁 Static files served from: http://localhost:${port}/`
-  );
-  Logger.log(
-    `📂 Public directory path: ${publicPath}`
-  );
+    const globalPrefix = 'api';
+    app.setGlobalPrefix(globalPrefix);
+    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalFilters(new GlobalExceptionFilter());
+    const port = process.env.PORT || 3007;
+    await app.listen(port);
+    Logger.log(
+      `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+    );
+    Logger.log(
+      `📁 Static files served from: http://localhost:${port}/`
+    );
+    Logger.log(
+      `📂 Public directory path: ${publicPath}`
+    );
+  } catch (error) {
+    console.error('❌ FATAL ERROR DURING BOOTSTRAP:', error);
+    process.exit(1);
+  }
 }
+
+bootstrap();
 
 bootstrap();
