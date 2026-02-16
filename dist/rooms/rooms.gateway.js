@@ -80,7 +80,7 @@ let RoomsGateway = class RoomsGateway {
                 });
                 return { success: false, error: 'Room not found' };
             }
-            else if (room.isActive) {
+            else if (room.gameStarted) {
                 console.log(`Room ${data.roomId} already started`);
                 client.emit('error', {
                     type: 'GAME_ALREADY_STARTED',
@@ -109,6 +109,7 @@ let RoomsGateway = class RoomsGateway {
         const room = this.roomsService.getRoom(data.roomId);
         if (room) {
             room.isActive = true;
+            room.gameStarted = true;
             room.round = 0;
             // Cargar preguntas de la trivia desde la base de datos
             this.triviasService.getTriviaById(data.triviaId).then(trivia => {
@@ -161,7 +162,10 @@ let RoomsGateway = class RoomsGateway {
                     showRanking: true
                 });
                 // Actualizar estado del room
-                room.isActive = false;
+                room.gameStarted = false;
+                room.isActive = true;
+                room.players = [];
+                room.round = 0;
                 this.server.to(roomId).emit('roomState', room);
                 console.log(`✅ Room ${roomId} game state updated to inactive`);
             }, 5000);

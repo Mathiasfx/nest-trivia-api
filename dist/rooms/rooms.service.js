@@ -19,6 +19,7 @@ let RoomsService = class RoomsService {
                 players: [],
                 round: 0,
                 isActive: false,
+                gameStarted: false,
                 currentQuestion: undefined,
                 questions: [],
                 triviaId: triviaId
@@ -32,7 +33,7 @@ let RoomsService = class RoomsService {
             return null; // Room doesn't exist
         }
         // Check if game is already started
-        if (this.rooms[roomId].isActive) {
+        if (this.rooms[roomId].gameStarted) {
             return null; // Game already started
         }
         const player = {
@@ -49,8 +50,9 @@ let RoomsService = class RoomsService {
     }
     startGame(roomId, questions) {
         const room = this.rooms[roomId];
-        if (room && !room.isActive) {
+        if (room && !room.gameStarted) {
             room.isActive = true;
+            room.gameStarted = true;
             room.round = 1;
             room.questions = questions;
             this.setCurrentQuestion(roomId);
@@ -113,13 +115,11 @@ let RoomsService = class RoomsService {
         const room = this.rooms[roomId];
         if (!room)
             return false;
-        room.isActive = false;
+        room.gameStarted = false;
+        room.isActive = true;
         room.currentQuestion = undefined;
-        // Reset player answers
-        room.players.forEach(p => {
-            p.answeredAt = undefined;
-            p.answeredCorrect = false;
-        });
+        room.round = 0;
+        room.players = [];
         return true;
     }
     updateTriviaStatus(roomId, isActive) {
