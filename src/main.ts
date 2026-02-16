@@ -59,9 +59,9 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    console.log('✅ CORS INITIALIZED - Version 2.0.2');
+    console.log('✅ CORS INITIALIZED - Version 2.0.3');
 
-    // Configurar CORS de forma explícita
+    // Configurar CORS para Angular preflight
     app.enableCors({
       origin: [
         'https://triviamultiplayerdashboard.netlify.app',
@@ -70,8 +70,9 @@ async function bootstrap() {
       ],
       credentials: true,
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
       exposedHeaders: ['Content-Type', 'Authorization'],
+      maxAge: 3600,
       optionsSuccessStatus: 200,
       preflightContinue: false,
     });
