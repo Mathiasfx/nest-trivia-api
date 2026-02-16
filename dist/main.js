@@ -81,7 +81,7 @@ async function bootstrap() {
         app.setGlobalPrefix(globalPrefix);
         app.useGlobalPipes(new common_1.ValidationPipe());
         app.useGlobalFilters(new GlobalExceptionFilter());
-        const port = process.env.PORT || 3007;
+        const port = parseInt(process.env.PORT || '3007', 10);
         await app.listen(port);
         common_2.Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
         common_2.Logger.log(`📁 Static files served from: http://localhost:${port}/`);
@@ -92,5 +92,4 @@ async function bootstrap() {
         process.exit(1);
     }
 }
-bootstrap();
 bootstrap();

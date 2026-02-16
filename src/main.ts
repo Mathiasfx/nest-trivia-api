@@ -88,7 +88,7 @@ async function bootstrap() {
     app.setGlobalPrefix(globalPrefix);
     app.useGlobalPipes(new ValidationPipe());
     app.useGlobalFilters(new GlobalExceptionFilter());
-    const port = process.env.PORT || 3007;
+    const port = parseInt(process.env.PORT || '3007', 10);
     await app.listen(port);
     Logger.log(
       `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
@@ -104,7 +104,5 @@ async function bootstrap() {
     process.exit(1);
   }
 }
-
-bootstrap();
 
 bootstrap();
