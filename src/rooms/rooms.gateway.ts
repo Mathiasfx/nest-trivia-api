@@ -103,7 +103,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           message: `La sala "${data.roomId}" no existe. Verifica el ID e intenta nuevamente.` 
         });
         return { success: false, error: 'Room not found' };
-      } else if (room.isActive) {
+      } else if (room.gameStarted) {
         console.log(`Room ${data.roomId} already started`);
         client.emit('error', { 
           type: 'GAME_ALREADY_STARTED',
@@ -145,6 +145,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = this.roomsService.getRoom(data.roomId);
     if (room) {
       room.isActive = true;
+      room.gameStarted = true;
       room.round = 0;
       
       // Cargar preguntas de la trivia desde la base de datos
@@ -205,7 +206,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
         
         // Actualizar estado del room
-        room!.isActive = false;
+        room!.gameStarted = false;
+        room!.isActive = true;
+        room!.players = [];
+        room!.round = 0;
         this.server.to(roomId).emit('roomState', room);
         
         console.log(`✅ Room ${roomId} game state updated to inactive`);

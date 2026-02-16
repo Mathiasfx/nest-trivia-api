@@ -25,6 +25,7 @@ export interface Room {
   };
   round: number;
   isActive: boolean;
+  gameStarted: boolean;
   questions: TriviaQuestion[];
   triviaId?: string;
 }
@@ -40,6 +41,7 @@ export class RoomsService {
         players: [],
         round: 0,
         isActive: false,
+        gameStarted: false,
         currentQuestion: undefined,
         questions: [],
         triviaId: triviaId
@@ -55,7 +57,7 @@ export class RoomsService {
     }
     
     // Check if game is already started
-    if (this.rooms[roomId].isActive) {
+    if (this.rooms[roomId].gameStarted) {
       return null; // Game already started
     }
     
@@ -75,8 +77,9 @@ export class RoomsService {
 
   startGame(roomId: string, questions: TriviaQuestion[]): boolean {
     const room = this.rooms[roomId];
-    if (room && !room.isActive) {
+    if (room && !room.gameStarted) {
       room.isActive = true;
+      room.gameStarted = true;
       room.round = 1;
       room.questions = questions;
       this.setCurrentQuestion(roomId);
@@ -139,14 +142,11 @@ export class RoomsService {
     const room = this.rooms[roomId];
     if (!room) return false;
     
-    room.isActive = false;
+    room.gameStarted = false;
+    room.isActive = true;
     room.currentQuestion = undefined;
-    
-    // Reset player answers
-    room.players.forEach(p => {
-      p.answeredAt = undefined;
-      p.answeredCorrect = false;
-    });
+    room.round = 0;
+    room.players = [];
     
     return true;
   }
