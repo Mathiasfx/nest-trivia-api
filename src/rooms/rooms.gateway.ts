@@ -169,8 +169,36 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               totalQuestions: room.questions.length
             });
             
-            // Iniciar la primera ronda
-            this.startNextRound(data.roomId);
+            // Emitir la primera pregunta
+            room.round = 1;
+            const currentQuestion = room.questions[room.round - 1];
+            room.currentQuestion = {
+              question: currentQuestion.question,
+              options: currentQuestion.options,
+              correctAnswer: currentQuestion.correctAnswer
+            };
+            
+            // Resetear respuestas de jugadores
+            room.players.forEach(player => {
+              player.answeredAt = undefined;
+              player.answeredCorrect = undefined;
+            });
+            
+            // Enviar primera ronda
+            this.server.to(data.roomId).emit('newRound', {
+              round: room.round,
+              question: room.currentQuestion.question,
+              options: room.currentQuestion.options,
+              timerSeconds: 15
+            });
+            
+            // Enviar estado actualizado
+            this.server.to(data.roomId).emit('roomState', room);
+            
+            // Después de 15 segundos, pasar a la siguiente ronda
+            setTimeout(() => {
+              this.startNextRound(data.roomId);
+            }, 15000);
           }, 3000);
         } else {
           console.error('No questions found in trivia');
@@ -187,8 +215,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private startNextRound(roomId: string) {
     const room = this.roomsService.getRoom(roomId);
-    if (!room || room.round >= room.questions.length) {
-      // Juego terminado - mostrar countdown final y ranking
+    if (!room) return;
+    
+    // Si ya pasamos la última pregunta, terminar el juego
+    if (room.round >= room.questions.length) {
+      // Juego terminado - mostrar countdown final
       this.server.to(roomId).emit('gameEnding', { 
         message: '¡El juego está por terminar!',
         countdown: 5
@@ -198,7 +229,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       setTimeout(() => {
         const ranking = this.roomsService.getRanking(roomId);
         console.log(`🏆 Game finished in room ${roomId}! Final ranking:`, ranking);
-        console.log(`📊 Total players: ${room!.players.length}, Total rounds: ${room!.round}`);
+        console.log(`📊 Total players: ${room.players.length}, Total rounds: ${room.round}`);
         
         this.server.to(roomId).emit('gameEnded', { 
           message: '¡Juego terminado!',
@@ -207,10 +238,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
         
         // Actualizar estado del room
-        room!.gameStarted = false;
-        room!.isActive = true;
-        room!.players = [];
-        room!.round = 0;
+        room.gameStarted = false;
+        room.isActive = true;
+        room.players = [];
+        room.round = 0;
         this.server.to(roomId).emit('roomState', room);
         
         console.log(`✅ Room ${roomId} game state updated to inactive`);
@@ -218,6 +249,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+    // Avanzar a la siguiente ronda
     room.round++;
     const currentQuestion = room.questions[room.round - 1];
     room.currentQuestion = {
@@ -226,7 +258,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       correctAnswer: currentQuestion.correctAnswer
     };
 
-    // Resetear respuestas de jugadores
+    // Resetear respuestas de jugadores para esta ronda
     room.players.forEach(player => {
       player.answeredAt = undefined;
       player.answeredCorrect = undefined;
@@ -242,6 +274,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Enviar estado actualizado
     this.server.to(roomId).emit('roomState', room);
+    
+    // Automáticamente avanzar a la siguiente pregunta después de 15 segundos
+    setTimeout(() => {
+      this.startNextRound(roomId);
+    }, 15000);
   }
 
   @SubscribeMessage('submitAnswer')
@@ -261,39 +298,9 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Enviar ranking actualizado a todos
       const ranking = this.roomsService.getRanking(data.roomId);
       this.server.to(data.roomId).emit('rankingUpdated', ranking);
-      
-      // Verificar si todos han respondido para controlar avance de ronda
-      this.checkRoundComplete(data.roomId);
     }
     
     return result;
-  }
-
-  private checkRoundComplete(roomId: string) {
-    const room = this.roomsService.getRoom(roomId);
-    if (!room) return;
-    
-    const allAnswered = room.players.every(p => p.answeredAt !== undefined);
-    
-    if (allAnswered) {
-      // Esperar 2 segundos antes de avanzar
-      setTimeout(() => {
-        // Verificar si hay más preguntas
-        if (room.round < room.questions.length) {
-          // Emitir evento de siguiente ronda
-          this.server.to(roomId).emit('nextRound', {
-            message: 'Avanzando a la siguiente pregunta...'
-          });
-          
-          // Llamar startNextRound para la siguiente ronda
-          this.startNextRound(roomId);
-        } else {
-          // Fin del juego
-          const finalRanking = this.roomsService.getRanking(roomId);
-          this.server.to(roomId).emit('gameEnded', { ranking: finalRanking });
-        }
-      }, 2000);
-    }
   }
 
   @SubscribeMessage('roomActivated')
