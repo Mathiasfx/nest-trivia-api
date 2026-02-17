@@ -161,15 +161,16 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           // Enviar countdown 3-2-1 para preparar jugadores
           this.server.to(data.roomId).emit('countdown');
           
-          // Después de 3 segundos, iniciar la primera ronda
+          // Después de 3 segundos, emitir gameStarted e iniciar primera ronda
           setTimeout(() => {
-            this.startNextRound(data.roomId);
-            
             // Notificar a todos que el juego comenzó
             this.server.to(data.roomId).emit('gameStarted', {
               roomId: data.roomId,
               totalQuestions: room.questions.length
             });
+            
+            // Iniciar la primera ronda
+            this.startNextRound(data.roomId);
           }, 3000);
         } else {
           console.error('No questions found in trivia');
@@ -241,19 +242,6 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Enviar estado actualizado
     this.server.to(roomId).emit('roomState', room);
-    
-    // Automáticamente avanzar a la siguiente pregunta después de 15 segundos
-    // Solo si no es la última pregunta
-    if (room.round < room.questions.length) {
-      setTimeout(() => {
-        this.startNextRound(roomId);
-      }, 15000);
-    } else {
-      // Si es la última pregunta, esperar 15 segundos y luego terminar el juego
-      setTimeout(() => {
-        this.startNextRound(roomId); // Esta llamada detectará que no hay más preguntas y terminará el juego
-      }, 15000);
-    }
   }
 
   @SubscribeMessage('submitAnswer')
@@ -274,7 +262,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const ranking = this.roomsService.getRanking(data.roomId);
       this.server.to(data.roomId).emit('rankingUpdated', ranking);
       
-      // Verificar si todos han respondido para avanzar a la siguiente ronda
+      // Verificar si todos han respondido para controlar avance de ronda
       this.checkRoundComplete(data.roomId);
     }
     
@@ -288,30 +276,23 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const allAnswered = room.players.every(p => p.answeredAt !== undefined);
     
     if (allAnswered) {
-      // Esperar 2 segundos y avanzar a la siguiente ronda
+      // Esperar 2 segundos antes de avanzar
       setTimeout(() => {
-        const hasNextRound = this.roomsService.nextRound(roomId);
-        
-        if (hasNextRound) {
-          this.sendCurrentQuestion(roomId);
+        // Verificar si hay más preguntas
+        if (room.round < room.questions.length) {
+          // Emitir evento de siguiente ronda
+          this.server.to(roomId).emit('nextRound', {
+            message: 'Avanzando a la siguiente pregunta...'
+          });
+          
+          // Llamar startNextRound para la siguiente ronda
+          this.startNextRound(roomId);
         } else {
           // Fin del juego
           const finalRanking = this.roomsService.getRanking(roomId);
           this.server.to(roomId).emit('gameEnded', { ranking: finalRanking });
         }
       }, 2000);
-    }
-  }
-
-  private sendCurrentQuestion(roomId: string) {
-    const room = this.roomsService.getRoom(roomId);
-    if (room && room.currentQuestion) {
-      this.server.to(roomId).emit('newRound', {
-        round: room.round,
-        question: room.currentQuestion.question,
-        options: room.currentQuestion.options,
-        timerSeconds: 15, // configurable
-      });
     }
   }
 
