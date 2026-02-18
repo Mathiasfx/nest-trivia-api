@@ -189,7 +189,8 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               round: room.round,
               question: room.currentQuestion.question,
               options: room.currentQuestion.options,
-              timerSeconds: 15
+              timerSeconds: 15,
+              totalQuestions: room.questions.length
             });
             
             // Enviar estado actualizado
@@ -269,7 +270,8 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       round: room.round,
       question: room.currentQuestion.question,
       options: room.currentQuestion.options,
-      timerSeconds: 15
+      timerSeconds: 15,
+      totalQuestions: room.questions.length
     });
 
     // Enviar estado actualizado
