@@ -11,11 +11,13 @@ const common_1 = require("@nestjs/common");
 const trivias_controller_1 = require("./trivias.controller");
 const trivias_service_1 = require("./trivias.service");
 const prisma_service_1 = require("../../prisma.service");
+const rooms_module_1 = require("../rooms.module");
 let TriviasModule = class TriviasModule {
 };
 exports.TriviasModule = TriviasModule;
 exports.TriviasModule = TriviasModule = __decorate([
     (0, common_1.Module)({
+        imports: [rooms_module_1.RoomsModule],
         controllers: [trivias_controller_1.TriviasController],
         providers: [trivias_service_1.TriviasService, prisma_service_1.PrismaService],
         exports: [trivias_service_1.TriviasService],
