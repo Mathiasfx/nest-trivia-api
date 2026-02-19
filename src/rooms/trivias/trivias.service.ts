@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
+import { RoomPlayer, RoomsService } from '../rooms.service';
+
+
 
 @Injectable()
 export class TriviasService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,private roomsService: RoomsService) {}
 
   async createTrivia(userId: string, dto: any) {
     // Limitar a 1 trivia por usuario
@@ -37,12 +40,11 @@ export class TriviasService {
   }
 
   async startTrivia(id: string, userId: string) {
-    // Aquí podrías activar la trivia y lanzar el flujo por WebSocket
+   
     return this.prisma.trivia.update({ where: { id, userId }, data: { isActive: true } });
   }
 
-  async getRanking(id: string) {
-    // Implementa la lógica para obtener el ranking de la trivia
-    return [];
-  }
+async getRanking(id: string): Promise<RoomPlayer[]> {
+  return this.roomsService.getRanking(id); 
+}
 }

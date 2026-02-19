@@ -28,6 +28,7 @@ export interface Room {
   gameStarted: boolean;
   questions: TriviaQuestion[];
   triviaId?: string;
+  roundStartTime?: number;
 }
 
 @Injectable()
@@ -51,20 +52,19 @@ export class RoomsService {
   }
 
   joinRoom(roomId: string, playerName: string, isAdmin = false): RoomPlayer | null {
-    // Check if room exists
+  
     if (!this.rooms[roomId]) {
-      return null; // Room doesn't exist
+      return null; 
     }
-    
-    // Check if game is already started
+  
     if (this.rooms[roomId].gameStarted) {
-      return null; // Game already started
+      return null;
     }
     
     const player: RoomPlayer = {
       id: Math.random().toString(36).substring(2, 10),
       name: playerName,
-      score: isAdmin ? 0 : 0, // Admin siempre tiene 0 puntos
+      score: isAdmin ? 0 : 0, 
       isAdmin
     };
     this.rooms[roomId].players.push(player);
@@ -92,6 +92,7 @@ export class RoomsService {
     const room = this.rooms[roomId];
     if (room && room.questions[room.round - 1]) {
       room.currentQuestion = room.questions[room.round - 1];
+      room.roundStartTime = Date.now();
       // Reset player answers for la ronda
       room.players.forEach(p => {
         p.answeredAt = undefined;
@@ -104,16 +105,20 @@ export class RoomsService {
     const room = this.rooms[roomId];
     if (!room || !room.isActive) return null;
     const player = room.players.find(p => p.id === playerId);
-    if (!player || player.answeredAt || player.isAdmin) return null; // Admin no responde
+    if (!player || player.answeredAt || player.isAdmin) return null;
     player.answeredAt = Date.now();
     const correct = answer.trim().toLowerCase() === (room.currentQuestion?.correctAnswer?.trim().toLowerCase() ?? '');
     player.answeredCorrect = correct;
-    if (correct) {
-      // Score: base + bonus por rapidez
-      const correctCount = room.players.filter(p => p.answeredCorrect && !p.isAdmin).length;
-      const bonus = Math.max(0, 5 - correctCount); // El primero suma más
-      player.score += 10 + bonus;
-    }
+   if (correct) {
+   
+    const timeElapsed = player.answeredAt - (room.roundStartTime || player.answeredAt);
+    const roundDuration = 15000; // 15 segundos en ms
+    
+    
+    const speedBonus = Math.max(0, Math.round(90 * (1 - timeElapsed / roundDuration)));
+    
+    player.score += 10 + speedBonus;
+  }
     return { correct, score: player.score };
   }
 
