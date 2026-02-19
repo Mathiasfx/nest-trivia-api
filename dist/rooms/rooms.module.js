@@ -10,14 +10,12 @@ exports.RoomsModule = void 0;
 const common_1 = require("@nestjs/common");
 const rooms_gateway_1 = require("./rooms.gateway");
 const rooms_service_1 = require("./rooms.service");
-const trivias_module_1 = require("./trivias/trivias.module");
 let RoomsModule = class RoomsModule {
 };
 exports.RoomsModule = RoomsModule;
 exports.RoomsModule = RoomsModule = __decorate([
     (0, common_1.Module)({
-        imports: [trivias_module_1.TriviasModule],
         providers: [rooms_gateway_1.RoomsGateway, rooms_service_1.RoomsService],
-        exports: [rooms_service_1.RoomsService, trivias_module_1.TriviasModule],
+        exports: [rooms_service_1.RoomsService],
     })
 ], RoomsModule);
