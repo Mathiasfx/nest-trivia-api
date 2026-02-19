@@ -147,7 +147,8 @@ let RoomsGateway = class RoomsGateway {
                             round: room.round,
                             question: room.currentQuestion.question,
                             options: room.currentQuestion.options,
-                            timerSeconds: 15
+                            timerSeconds: 15,
+                            totalQuestions: room.questions.length
                         });
                         // Enviar estado actualizado
                         this.server.to(data.roomId).emit('roomState', room);
@@ -217,7 +218,8 @@ let RoomsGateway = class RoomsGateway {
             round: room.round,
             question: room.currentQuestion.question,
             options: room.currentQuestion.options,
-            timerSeconds: 15
+            timerSeconds: 15,
+            totalQuestions: room.questions.length
         });
         // Enviar estado actualizado
         this.server.to(roomId).emit('roomState', room);

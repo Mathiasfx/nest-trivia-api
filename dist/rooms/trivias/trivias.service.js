@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TriviasService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma.service");
+const rooms_service_1 = require("../rooms.service");
 let TriviasService = class TriviasService {
-    constructor(prisma) {
+    constructor(prisma, roomsService) {
         this.prisma = prisma;
+        this.roomsService = roomsService;
     }
     async createTrivia(userId, dto) {
         // Limitar a 1 trivia por usuario
@@ -47,16 +49,14 @@ let TriviasService = class TriviasService {
         return this.prisma.trivia.delete({ where: { id, userId } });
     }
     async startTrivia(id, userId) {
-        // Aquí podrías activar la trivia y lanzar el flujo por WebSocket
         return this.prisma.trivia.update({ where: { id, userId }, data: { isActive: true } });
     }
     async getRanking(id) {
-        // Implementa la lógica para obtener el ranking de la trivia
-        return [];
+        return this.roomsService.getRanking(id);
     }
 };
 exports.TriviasService = TriviasService;
 exports.TriviasService = TriviasService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, rooms_service_1.RoomsService])
 ], TriviasService);
